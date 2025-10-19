@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const featuresEl = document.getElementById('features');
 
 
-  const API_KEY = "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";
+  const API_KEY = "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";
   generateBtn.addEventListener('click', generatePitch);
 
   async function generatePitch() {
