@@ -1,44 +1,90 @@
-const ideaInput = document.getElementById('idea');
-const resultBox = document.getElementById('result');
-const generateBtn = document.getElementById('generate');
 
-generateBtn.addEventListener('click', generatePitch);
 
-function generatePitch() {
-  const idea = ideaInput.value.trim();
-  if (!idea) return alert("Please enter an idea!");
+document.addEventListener("DOMContentLoaded", () => {
+  console.log(" home.js loaded");
 
-  // Show loading
-  document.getElementById('startupName').innerText = "Generating...";
-  document.getElementById('tagline').innerText = "";
-  document.getElementById('pitch').innerText = "";
-  document.getElementById('audience').innerText = "";
-  document.getElementById('features').innerHTML = "";
-  resultBox.style.display = "block";
+  
+  const ideaInput = document.getElementById('idea');
+  const resultBox = document.getElementById('result');
+  const generateBtn = document.getElementById('generate');
+  const startupNameEl = document.getElementById('startupName');
+  const taglineEl = document.getElementById('tagline');
+  const pitchEl = document.getElementById('pitch');
+  const audienceEl = document.getElementById('audience');
+  const featuresEl = document.getElementById('features');
 
-  // Simulate AI response
-  setTimeout(() => {
-    const lines = [
-      idea + " Labs",                         // Startup Name
-      "Innovate your world",                  // Tagline
-      `A 2-3 line pitch about ${idea}.`,     // Pitch
-      "Tech enthusiasts, startups, investors", // Audience
-      "Cutting-edge technology",             // Feature 1
-      "User-friendly design",                // Feature 2
-      "Affordable pricing"                   // Feature 3
-    ];
 
-    document.getElementById('startupName').innerText = lines[0];
-    document.getElementById('tagline').innerText = lines[1];
-    document.getElementById('pitch').innerText = lines[2];
-    document.getElementById('audience').innerText = lines[3];
+  const API_KEY = "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";
+  generateBtn.addEventListener('click', generatePitch);
 
-    const featureList = document.getElementById('features');
-    featureList.innerHTML = "";
-    for (let i = 4; i < lines.length; i++) {
-      const li = document.createElement("li");
-      li.textContent = lines[i];
-      featureList.appendChild(li);
+  async function generatePitch() {
+    console.log("✅ Button clicked!");
+
+    const idea = ideaInput.value.trim();
+    if (!idea) {
+      alert("⚠️ Pehle koi idea likho!");
+      return;
     }
-  }, 1000); // simulate 1 second delay
-}
+
+    
+    startupNameEl.innerText = "Generating...";
+    taglineEl.innerText = "";
+    pitchEl.innerText = "";
+    audienceEl.innerText = "";
+    featuresEl.innerHTML = "";
+    resultBox.style.display = "block";
+
+   
+    const prompt = `Generate a creative startup pitch for: "${idea}". Include:
+    - A catchy startup name
+    - A tagline
+    - A 2-3 line pitch
+    - Target audience
+    - 3 unique features`;
+
+    try {
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "gpt-3.5-turbo",
+          messages: [
+            { role: "system", content: "You are a creative startup pitch generator." },
+            { role: "user", content: prompt }
+          ]
+        }),
+      });
+
+      const data = await response.json();
+      console.log("API Response:", data);
+
+  
+      if (!data.choices || !data.choices[0]) {
+        throw new Error("Invalid API response.");
+      }
+
+      const text = data.choices[0].message.content;
+      const lines = text.split("\n").filter(line => line.trim() !== "");
+
+ 
+      startupNameEl.innerText = lines[0] || "Startup Name";
+      taglineEl.innerText = lines[1] || "";
+      pitchEl.innerText = lines[2] || "";
+      audienceEl.innerText = lines[3] || "";
+
+      featuresEl.innerHTML = "";
+      for (let i = 4; i < lines.length; i++) {
+        const li = document.createElement("li");
+        li.textContent = lines[i];
+        featuresEl.appendChild(li);
+      }
+
+    } catch (err) {
+      console.error(" Error:", err);
+      alert("Error: " + err.message);
+    }
+  }
+});
