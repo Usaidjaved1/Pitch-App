@@ -1,9 +1,4 @@
-
-
 document.addEventListener("DOMContentLoaded", () => {
-  console.log(" home.js loaded");
-
-  
   const ideaInput = document.getElementById('idea');
   const resultBox = document.getElementById('result');
   const generateBtn = document.getElementById('generate');
@@ -13,20 +8,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const audienceEl = document.getElementById('audience');
   const featuresEl = document.getElementById('features');
 
-
-  const API_KEY = "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";
-  generateBtn.addEventListener('click', generatePitch);
-
-  async function generatePitch() {
-    console.log("✅ Button clicked!");
-
+  generateBtn.addEventListener('click', async () => {
     const idea = ideaInput.value.trim();
     if (!idea) {
-      alert("⚠️ Pehle koi idea likho!");
+      alert(" Pehle koi idea likho!");
       return;
     }
 
-    
     startupNameEl.innerText = "Generating...";
     taglineEl.innerText = "";
     pitchEl.innerText = "";
@@ -34,47 +22,21 @@ document.addEventListener("DOMContentLoaded", () => {
     featuresEl.innerHTML = "";
     resultBox.style.display = "block";
 
-   
-    const prompt = `Generate a creative startup pitch for: "${idea}". Include:
-    - A catchy startup name
-    - A tagline
-    - A 2-3 line pitch
-    - Target audience
-    - 3 unique features`;
-
     try {
-      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      const response = await fetch("http://localhost:3000/generate-pitch", {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "gpt-3.5-turbo",
-          messages: [
-            { role: "system", content: "You are a creative startup pitch generator." },
-            { role: "user", content: prompt }
-          ]
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idea })
       });
 
       const data = await response.json();
-      console.log("API Response:", data);
-
-  
-      if (!data.choices || !data.choices[0]) {
-        throw new Error("Invalid API response.");
-      }
-
-      const text = data.choices[0].message.content;
+      const text = data.choices?.[0]?.message?.content || "Error in response";
       const lines = text.split("\n").filter(line => line.trim() !== "");
 
- 
       startupNameEl.innerText = lines[0] || "Startup Name";
       taglineEl.innerText = lines[1] || "";
       pitchEl.innerText = lines[2] || "";
       audienceEl.innerText = lines[3] || "";
-
       featuresEl.innerHTML = "";
       for (let i = 4; i < lines.length; i++) {
         const li = document.createElement("li");
@@ -83,8 +45,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
     } catch (err) {
-      console.error(" Error:", err);
+      console.error(err);
+      startupNameEl.innerText = "Error ";
       alert("Error: " + err.message);
     }
-  }
+  });
 });
