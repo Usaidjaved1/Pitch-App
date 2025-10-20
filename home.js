@@ -16,7 +16,6 @@ function generatePitch() {
   document.getElementById('features').innerHTML = "";
   resultBox.style.display = "block";
 
-  // Simulate AI response
   setTimeout(() => {
     const lines = [
       idea + " Labs",
